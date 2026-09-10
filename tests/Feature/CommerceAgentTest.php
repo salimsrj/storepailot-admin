@@ -75,6 +75,11 @@ class CommerceAgentTest extends TestCase
         $this->fakeAI();
         $this->app->bind(AIProviderInterface::class, fn () => new class implements AIProviderInterface
         {
+            public function name(): string
+            {
+                return 'fake';
+            }
+
             public function complete(AIRequest $request): AIResponse
             {
                 throw AIProviderException::unavailable();

@@ -15,6 +15,7 @@ class AiSettingController extends Controller
         return view('admin.settings.ai', [
             'settings' => $settings->current(),
             'envKeyConfigured' => filled(config('services.openai.api_key')),
+            'envGeminiKeyConfigured' => filled(config('services.gemini.api_key')),
         ]);
     }
 

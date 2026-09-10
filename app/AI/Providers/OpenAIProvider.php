@@ -19,6 +19,11 @@ class OpenAIProvider implements AIProviderInterface
 {
     public function __construct(private AiSettingsService $settings) {}
 
+    public function name(): string
+    {
+        return 'openai';
+    }
+
     public function complete(AIRequest $request): AIResponse
     {
         $payload = $this->post($request, stream: false);
@@ -66,10 +71,10 @@ class OpenAIProvider implements AIProviderInterface
      */
     private function post(AIRequest $request, bool $stream): array
     {
-        $apiKey = $this->settings->apiKey();
+        $apiKey = $this->settings->openaiApiKey();
 
         if (! is_string($apiKey) || $apiKey === '') {
-            throw AIProviderException::unavailable();
+            throw AIProviderException::invalidApiKey('OpenAI');
         }
 
         $attempts = 0;

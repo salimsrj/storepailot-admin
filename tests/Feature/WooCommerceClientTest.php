@@ -19,8 +19,12 @@ class WooCommerceClientTest extends TestCase
         Http::preventStrayRequests();
         $site = Site::factory()->withSecret($this->siteSecret())->create();
 
-        Http::fake([
-            $site->url.'/wp-json/commercepilot/v1/products/search' => Http::response([
+        Http::fake(function (Request $request) {
+            if (! str_contains($request->url(), 'rest_route=/commercepilot/v1/products/search')) {
+                return null;
+            }
+
+            return Http::response([
                 'products' => [[
                     'id' => 123,
                     'name' => 'Nike Running Shoe',
@@ -33,14 +37,15 @@ class WooCommerceClientTest extends TestCase
                     'categories' => ['Running'],
                     'has_variations' => true,
                 ]],
-            ]),
-        ]);
+            ]);
+        });
 
         $products = app(WordPressWooCommerceClient::class)->searchProducts($site, ['query' => 'nike']);
 
         $this->assertSame('Nike Running Shoe', $products[0]->name);
         $this->assertSame('89.00', $products[0]->price);
-        Http::assertSent(fn ($request): bool => $request->hasHeader('X-CommercePilot-Signature'));
+        Http::assertSent(fn ($request): bool => $request->hasHeader('X-CommercePilot-Signature')
+            && str_contains($request->url(), 'rest_route=/commercepilot/v1/products/search'));
     }
 
     public function test_get_product_and_variations_and_stock(): void
@@ -48,25 +53,37 @@ class WooCommerceClientTest extends TestCase
         Http::preventStrayRequests();
         $site = Site::factory()->withSecret($this->siteSecret())->create();
 
-        Http::fake([
-            $site->url.'/wp-json/commercepilot/v1/products/10' => Http::response([
-                'id' => 10,
-                'name' => 'Tee',
-                'price' => '12.00',
-                'currency' => 'USD',
-                'stock_status' => 'instock',
-                'url' => 'https://example.com/tee',
-                'categories' => [],
-                'has_variations' => true,
-            ]),
-            $site->url.'/wp-json/commercepilot/v1/products/10/variations' => Http::response([
-                'variations' => [['id' => 11, 'name' => 'Small']],
-            ]),
-            $site->url.'/wp-json/commercepilot/v1/stock' => Http::response([
-                'in_stock' => true,
-                'quantity' => 4,
-            ]),
-        ]);
+        Http::fake(function (Request $request) {
+            $url = $request->url();
+
+            if (str_contains($url, 'rest_route=/commercepilot/v1/products/10/variations')) {
+                return Http::response([
+                    'variations' => [['id' => 11, 'name' => 'Small']],
+                ]);
+            }
+
+            if (str_contains($url, 'rest_route=/commercepilot/v1/products/10')) {
+                return Http::response([
+                    'id' => 10,
+                    'name' => 'Tee',
+                    'price' => '12.00',
+                    'currency' => 'USD',
+                    'stock_status' => 'instock',
+                    'url' => 'https://example.com/tee',
+                    'categories' => [],
+                    'has_variations' => true,
+                ]);
+            }
+
+            if (str_contains($url, 'rest_route=/commercepilot/v1/stock')) {
+                return Http::response([
+                    'in_stock' => true,
+                    'quantity' => 4,
+                ]);
+            }
+
+            return null;
+        });
 
         $client = app(WordPressWooCommerceClient::class);
 
@@ -81,11 +98,11 @@ class WooCommerceClientTest extends TestCase
         $site = Site::factory()->withSecret($this->siteSecret())->create();
 
         Http::fake(function (Request $request) {
-            if (str_contains($request->url(), '/checkout')) {
+            if (str_contains($request->url(), 'rest_route=/commercepilot/v1/checkout')) {
                 return Http::response(['url' => 'https://example.com/checkout']);
             }
 
-            if (str_contains($request->url(), '/cart/items')) {
+            if (str_contains($request->url(), 'rest_route=/commercepilot/v1/cart/items')) {
                 return Http::response([
                     'items' => [['key' => 'abc', 'quantity' => 1]],
                     'total' => '10.00',

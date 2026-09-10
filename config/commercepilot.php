@@ -15,6 +15,7 @@ return [
     'ai' => [
         'provider' => env('COMMERCEPILOT_AI_PROVIDER', 'openai'),
         'model' => env('COMMERCEPILOT_AI_MODEL', 'gpt-4o-mini'),
+        'gemini_model' => env('COMMERCEPILOT_GEMINI_MODEL', 'gemini-3.8-flash'),
         'timeout' => (int) env('COMMERCEPILOT_AI_TIMEOUT', 30),
         'max_tool_iterations' => (int) env('COMMERCEPILOT_MAX_TOOL_ITERATIONS', 5),
         'max_context_messages' => (int) env('COMMERCEPILOT_MAX_CONTEXT_MESSAGES', 20),

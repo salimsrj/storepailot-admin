@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\AI\Contracts\AIProviderInterface;
+use App\AI\Providers\GeminiProvider;
 use App\AI\Providers\OpenAIProvider;
 use App\AI\Tools\AddToCartTool;
 use App\AI\Tools\CheckStockTool;
@@ -16,6 +17,7 @@ use App\AI\Tools\ToolRegistry;
 use App\AI\Tools\UpdateCartTool;
 use App\Billing\Contracts\PaymentProviderInterface;
 use App\Billing\Providers\ManualPaymentProvider;
+use App\Enums\AiProvider;
 use App\Services\Ai\AiSettingsService;
 use App\Services\WooCommerce\Contracts\WooCommerceClientInterface;
 use App\Services\WooCommerce\WordPressWooCommerceClient;
@@ -35,7 +37,12 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(AiSettingsService::class);
-        $this->app->singleton(AIProviderInterface::class, OpenAIProvider::class);
+        $this->app->bind(AIProviderInterface::class, function ($app): AIProviderInterface {
+            return match ($app->make(AiSettingsService::class)->provider()) {
+                AiProvider::Gemini => $app->make(GeminiProvider::class),
+                default => $app->make(OpenAIProvider::class),
+            };
+        });
         $this->app->singleton(WooCommerceClientInterface::class, WordPressWooCommerceClient::class);
         $this->app->singleton(PaymentProviderInterface::class, ManualPaymentProvider::class);
 

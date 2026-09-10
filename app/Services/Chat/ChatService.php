@@ -4,6 +4,7 @@ namespace App\Services\Chat;
 
 use App\AI\Agent\AgentContext;
 use App\AI\Agent\CommerceAgent;
+use App\AI\Contracts\AIProviderInterface;
 use App\Enums\ConversationMode;
 use App\Enums\MessageRole;
 use App\Exceptions\AIProviderException;
@@ -24,6 +25,7 @@ class ChatService
 {
     public function __construct(
         private CommerceAgent $agent,
+        private AIProviderInterface $provider,
         private UsageService $usage,
         private CannedReplyService $canned,
     ) {}
@@ -89,7 +91,7 @@ class ChatService
             $conversation,
             $result['response']->inputTokens,
             $result['response']->outputTokens,
-            'openai',
+            $this->provider->name(),
             $result['response']->model,
         );
 

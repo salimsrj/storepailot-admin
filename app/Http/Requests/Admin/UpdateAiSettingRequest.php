@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\AiProvider;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateAiSettingRequest extends FormRequest
 {
@@ -33,8 +35,10 @@ class UpdateAiSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'provider' => ['required', Rule::enum(AiProvider::class)],
             'openai_api_key' => ['nullable', 'string', 'min:10', 'max:255'],
             'openai_organization' => ['nullable', 'string', 'max:64'],
+            'gemini_api_key' => ['nullable', 'string', 'min:10', 'max:255'],
             'model' => ['required', 'string', 'max:80'],
             'timeout' => ['required', 'integer', 'min:5', 'max:120'],
             'max_tool_iterations' => ['required', 'integer', 'min:1', 'max:10'],

@@ -21,6 +21,11 @@ class FakeAIProvider implements AIProviderInterface
         return $this;
     }
 
+    public function name(): string
+    {
+        return 'fake';
+    }
+
     public function complete(AIRequest $request): AIResponse
     {
         return array_shift($this->queue) ?? new AIResponse(

@@ -8,6 +8,8 @@ use Generator;
 
 interface AIProviderInterface
 {
+    public function name(): string;
+
     public function complete(AIRequest $request): AIResponse;
 
     /**

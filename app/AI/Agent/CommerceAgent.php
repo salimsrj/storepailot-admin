@@ -60,14 +60,22 @@ class CommerceAgent
             $messages[] = [
                 'role' => 'assistant',
                 'content' => $response->content,
-                'tool_calls' => array_map(fn (ToolCall $call): array => [
-                    'id' => $call->id,
-                    'type' => 'function',
-                    'function' => [
-                        'name' => $call->name,
-                        'arguments' => json_encode($call->arguments, JSON_THROW_ON_ERROR),
-                    ],
-                ], $response->toolCalls),
+                'tool_calls' => array_map(function (ToolCall $call): array {
+                    $payload = [
+                        'id' => $call->id,
+                        'type' => 'function',
+                        'function' => [
+                            'name' => $call->name,
+                            'arguments' => json_encode($call->arguments, JSON_THROW_ON_ERROR),
+                        ],
+                    ];
+
+                    if ($call->thoughtSignature !== null && $call->thoughtSignature !== '') {
+                        $payload['thought_signature'] = $call->thoughtSignature;
+                    }
+
+                    return $payload;
+                }, $response->toolCalls),
             ];
 
             foreach ($response->toolCalls as $call) {
