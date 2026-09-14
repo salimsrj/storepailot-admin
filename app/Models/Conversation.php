@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ConversationMode;
 use App\Enums\ConversationStatus;
+use App\Enums\MessageRole;
 use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\ConversationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -97,5 +98,24 @@ class Conversation extends Model
     public function scopeForVisitor(Builder $query, Visitor $visitor): Builder
     {
         return $query->whereBelongsTo($visitor);
+    }
+
+    /**
+     * Conversations where the visitor spoke last and still need a reply.
+     *
+     * @param  Builder<Conversation>  $query
+     * @return Builder<Conversation>
+     */
+    public function scopeWaitingReply(Builder $query): Builder
+    {
+        return $query
+            ->where('status', ConversationStatus::Open)
+            ->whereExists(function ($subquery): void {
+                $subquery->selectRaw('1')
+                    ->from('messages as latest')
+                    ->whereColumn('latest.conversation_id', 'conversations.id')
+                    ->where('latest.role', MessageRole::User->value)
+                    ->whereRaw('latest.id = (select max(id) from messages where conversation_id = conversations.id)');
+            });
     }
 }

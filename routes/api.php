@@ -33,6 +33,7 @@ Route::prefix('v1')->group(function (): void {
     // admin inbox and widget polling cannot exhaust the daily chat allowance.
     Route::middleware(['site', 'site.rate:poll', 'site.hmac'])->group(function (): void {
         Route::get('conversations', [ConversationController::class, 'index'])->name('api.v1.conversations.index');
+        Route::get('conversations/waiting-count', [ConversationController::class, 'waitingCount'])->name('api.v1.conversations.waiting-count');
         Route::get('conversations/{conversation}', [ConversationController::class, 'show'])->name('api.v1.conversations.show');
         Route::get('conversations/{conversation}/messages', [ConversationController::class, 'messages'])->name('api.v1.conversations.messages');
         Route::post('conversations/{conversation}/takeover', [ConversationController::class, 'takeOver'])->name('api.v1.conversations.takeover');

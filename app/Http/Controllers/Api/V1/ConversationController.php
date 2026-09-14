@@ -45,6 +45,24 @@ class ConversationController extends Controller
         return ConversationResource::collection($conversations);
     }
 
+    /**
+     * Lightweight count for the WordPress admin menu badge: open conversations
+     * where the visitor's message is still unanswered.
+     */
+    public function waitingCount(ConversationQueryRequest $request): JsonResponse
+    {
+        $count = Conversation::query()
+            ->forSite($this->site($request))
+            ->waitingReply()
+            ->count();
+
+        return response()->json([
+            'data' => [
+                'waiting_count' => $count,
+            ],
+        ]);
+    }
+
     public function show(ConversationQueryRequest $request, string $conversation): ConversationResource
     {
         $model = $this->find($this->site($request), $conversation);

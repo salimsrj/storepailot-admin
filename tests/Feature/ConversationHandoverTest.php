@@ -154,6 +154,28 @@ class ConversationHandoverTest extends TestCase
         $this->assertSame('human', $message->metadata['author']);
     }
 
+    public function test_waiting_count_returns_open_conversations_where_visitor_spoke_last(): void
+    {
+        $site = $this->authenticatedSite();
+
+        $waiting = Conversation::factory()->for($site)->create();
+        Message::factory()->for($waiting)->create(['role' => 'user', 'content' => 'Need help']);
+
+        $answered = Conversation::factory()->for($site)->create();
+        Message::factory()->for($answered)->create(['role' => 'user', 'content' => 'Hi']);
+        Message::factory()->assistant()->for($answered)->create();
+
+        $closedWaiting = Conversation::factory()->for($site)->closed()->create();
+        Message::factory()->for($closedWaiting)->create(['role' => 'user', 'content' => 'Old question']);
+
+        $foreign = Conversation::factory()->create();
+        Message::factory()->for($foreign)->create(['role' => 'user', 'content' => 'Other site']);
+
+        $this->getSigned('/api/v1/conversations/waiting-count')
+            ->assertOk()
+            ->assertJsonPath('data.waiting_count', 1);
+    }
+
     public function test_conversations_are_scoped_to_the_authenticated_site(): void
     {
         $site = $this->authenticatedSite();
