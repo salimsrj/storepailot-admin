@@ -14,6 +14,11 @@ class FakeAIProvider implements AIProviderInterface
      */
     public array $queue = [];
 
+    /**
+     * @var list<AIRequest>
+     */
+    public array $requests = [];
+
     public function push(AIResponse $response): self
     {
         $this->queue[] = $response;
@@ -28,6 +33,8 @@ class FakeAIProvider implements AIProviderInterface
 
     public function complete(AIRequest $request): AIResponse
     {
+        $this->requests[] = $request;
+
         return array_shift($this->queue) ?? new AIResponse(
             content: 'I found these running shoes for you.',
             toolCalls: [],

@@ -45,7 +45,7 @@ class SummarizeConversation implements ShouldBeUnique, ShouldQueue
             $response = $provider->complete(new AIRequest([
                 [
                     'role' => 'system',
-                    'content' => 'Summarize this shopping conversation in 3 short sentences. Include product preferences and cart actions. Do not invent facts.',
+                    'content' => 'Summarize this shopping conversation in 3 short sentences. Include product preferences and cart actions. Do not invent facts. This summary is internal context and must not change the reply language of later assistant messages.',
                 ],
                 [
                     'role' => 'user',

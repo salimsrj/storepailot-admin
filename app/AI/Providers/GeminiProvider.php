@@ -386,16 +386,27 @@ class GeminiProvider implements AIProviderInterface
     {
         $mapped = [];
         $index = 0;
+        $pendingSignature = null;
 
         foreach ($parts as $part) {
-            if (! is_array($part) || ! isset($part['functionCall']) || ! is_array($part['functionCall'])) {
+            if (! is_array($part)) {
+                continue;
+            }
+
+            $partSignature = (string) ($part['thoughtSignature'] ?? $part['thought_signature'] ?? '');
+
+            if ($partSignature !== '') {
+                $pendingSignature = $partSignature;
+            }
+
+            if (! isset($part['functionCall']) || ! is_array($part['functionCall'])) {
                 continue;
             }
 
             $index++;
             $call = $part['functionCall'];
             $arguments = $call['args'] ?? [];
-            $thoughtSignature = (string) ($part['thoughtSignature'] ?? $part['thought_signature'] ?? '');
+            $thoughtSignature = $partSignature !== '' ? $partSignature : (string) ($pendingSignature ?? '');
 
             $mapped[] = new ToolCall(
                 id: (string) ($call['id'] ?? 'call_gemini_'.$index),
@@ -403,6 +414,8 @@ class GeminiProvider implements AIProviderInterface
                 arguments: is_array($arguments) ? $arguments : [],
                 thoughtSignature: $thoughtSignature !== '' ? $thoughtSignature : null,
             );
+
+            $pendingSignature = null;
         }
 
         return $mapped;

@@ -38,7 +38,7 @@ class CommerceAgent
         $inputTokens = 0;
         $outputTokens = 0;
         $providerResponseId = null;
-        $finalContent = 'I could not complete that request right now.';
+        $finalContent = CustomerLanguage::fallbackReply($context->message);
 
         $maxIterations = $this->settings->maxToolIterations();
 
@@ -79,12 +79,19 @@ class CommerceAgent
             ];
 
             foreach ($response->toolCalls as $call) {
+                $metadata = ['arguments' => $call->arguments];
+
+                if ($call->thoughtSignature !== null && $call->thoughtSignature !== '') {
+                    $metadata['thought_signature'] = $call->thoughtSignature;
+                }
+
                 $this->storeMessage(
                     $context->conversation,
                     MessageRole::Assistant,
                     $response->content ?: '',
                     $call->name,
                     $call->id,
+                    metadata: $metadata,
                 );
 
                 $result = $this->executor->execute($context, $call);
@@ -177,7 +184,32 @@ class CommerceAgent
             ],
         ];
 
+        $skippedToolCallIds = [];
+
         foreach ($history as $message) {
+            if ($message->role === MessageRole::Assistant && $message->tool_call_id) {
+                $toolCalls = $this->toolCallsFromMessage($message);
+
+                if ($toolCalls === [] || ! $this->canReplayToolCall($message)) {
+                    $skippedToolCallIds[] = $message->tool_call_id;
+
+                    continue;
+                }
+
+                $payload = [
+                    'role' => $message->role->value,
+                    'content' => $message->content,
+                    'tool_calls' => $toolCalls,
+                ];
+                $messages[] = $payload;
+
+                continue;
+            }
+
+            if ($message->role === MessageRole::Tool && $message->tool_call_id && in_array($message->tool_call_id, $skippedToolCallIds, true)) {
+                continue;
+            }
+
             $payload = [
                 'role' => $message->role->value,
                 'content' => $message->content,
@@ -193,6 +225,9 @@ class CommerceAgent
         return $messages;
     }
 
+    /**
+     * @param  array<string, mixed>|null  $metadata
+     */
     private function storeMessage(
         Conversation $conversation,
         MessageRole $role,
@@ -202,6 +237,7 @@ class CommerceAgent
         ?int $inputTokens = null,
         ?int $outputTokens = null,
         ?string $providerResponseId = null,
+        ?array $metadata = null,
     ): Message {
         return $conversation->messages()->create([
             'role' => $role,
@@ -211,7 +247,55 @@ class CommerceAgent
             'input_tokens' => $inputTokens,
             'output_tokens' => $outputTokens,
             'provider_response_id' => $providerResponseId,
+            'metadata' => $metadata,
         ]);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function toolCallsFromMessage(Message $message): array
+    {
+        if ($message->tool_call_id === null || $message->tool_name === null || $message->tool_name === '') {
+            return [];
+        }
+
+        $metadata = is_array($message->metadata) ? $message->metadata : [];
+        $arguments = $metadata['arguments'] ?? [];
+
+        if (! is_array($arguments)) {
+            $arguments = [];
+        }
+
+        $payload = [
+            'id' => $message->tool_call_id,
+            'type' => 'function',
+            'function' => [
+                'name' => $message->tool_name,
+                'arguments' => json_encode($arguments, JSON_THROW_ON_ERROR),
+            ],
+        ];
+
+        $signature = $metadata['thought_signature'] ?? null;
+
+        if (is_string($signature) && $signature !== '') {
+            $payload['thought_signature'] = $signature;
+        }
+
+        return [$payload];
+    }
+
+    private function canReplayToolCall(Message $message): bool
+    {
+        $metadata = is_array($message->metadata) ? $message->metadata : [];
+        $signature = $metadata['thought_signature'] ?? null;
+        $arguments = $metadata['arguments'] ?? null;
+
+        if (is_string($signature) && $signature !== '') {
+            return true;
+        }
+
+        return is_array($arguments) && $arguments !== [];
     }
 
     /**

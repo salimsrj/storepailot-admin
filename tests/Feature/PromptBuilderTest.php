@@ -30,6 +30,32 @@ class PromptBuilderTest extends TestCase
             'do not answer the off-topic request',
             $prompt,
         );
+        $this->assertStringContainsString(
+            'in the customer\'s language',
+            $prompt,
+        );
+    }
+
+    public function test_system_prompt_instructs_replies_in_the_customer_language(): void
+    {
+        $site = Site::factory()->withSettings()->create();
+        $settings = $site->settings()->firstOrFail();
+
+        $prompt = app(PromptBuilder::class)->systemPrompt($site, $settings);
+
+        $this->assertStringContainsString(
+            'Reply in the same language and script as the customer\'s latest message',
+            $prompt,
+        );
+        $this->assertStringContainsString('Bangla (Bengali script)', $prompt);
+        $this->assertStringContainsString('Hindi (Devanagari)', $prompt);
+        $this->assertStringContainsString('Banglish (Bengali written in Latin letters)', $prompt);
+        $this->assertStringContainsString('use the store language as fallback', $prompt);
+        $this->assertStringContainsString('do not translate catalog strings', $prompt);
+        $this->assertStringContainsString(
+            'fallback when the customer\'s language is mixed or unclear',
+            $prompt,
+        );
     }
 
     public function test_system_prompt_includes_merchant_instructions_and_summary(): void

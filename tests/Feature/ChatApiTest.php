@@ -136,6 +136,41 @@ class ChatApiTest extends TestCase
         ];
     }
 
+    #[DataProvider('multilingualShoppingMessages')]
+    public function test_multilingual_shopping_question_reaches_the_ai_and_stores_the_message(string $message): void
+    {
+        $this->authenticatedSite();
+        $this->fakeAI();
+
+        $response = $this->postJson('/api/v1/chat', [
+            'visitor_id' => '11111111-1111-1111-1111-111111111111',
+            'message' => $message,
+        ], $this->siteHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('data.message.role', 'assistant')
+            ->assertJsonPath('data.message.content', 'I found these running shoes for you.')
+            ->assertJsonPath('data.usage.used', 1)
+            ->assertJsonPath('data.usage.remaining', 49);
+
+        $this->assertDatabaseHas('messages', [
+            'role' => 'user',
+            'content' => $message,
+        ]);
+    }
+
+    /**
+     * @return array<string, list{string}>
+     */
+    public static function multilingualShoppingMessages(): array
+    {
+        return [
+            'bangla' => ['কালো জুতো দেখাও'],
+            'hindi' => ['काले जूते दिखाओ'],
+            'banglish' => ['kalo juta dekhaw'],
+        ];
+    }
+
     public function test_shopping_question_that_starts_with_a_greeting_still_calls_the_ai(): void
     {
         $this->authenticatedSite();

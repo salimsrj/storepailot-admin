@@ -236,6 +236,45 @@ class AdminAiSettingTest extends TestCase
         });
     }
 
+    public function test_gemini_provider_maps_a_thought_signature_from_a_preceding_part(): void
+    {
+        Http::preventStrayRequests();
+        Http::fake([
+            'https://generativelanguage.googleapis.com/v1beta/models/*' => Http::response([
+                'candidates' => [[
+                    'content' => [
+                        'parts' => [
+                            [
+                                'text' => 'Looking up products.',
+                                'thoughtSignature' => 'sig_from_thought',
+                            ],
+                            [
+                                'functionCall' => [
+                                    'name' => 'search_products',
+                                    'args' => ['query' => 'shoes'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ]],
+                'usageMetadata' => [
+                    'promptTokenCount' => 8,
+                    'candidatesTokenCount' => 4,
+                ],
+            ]),
+        ]);
+
+        AiSetting::factory()->gemini('AIza-from-dashboard')->create();
+
+        $response = app(GeminiProvider::class)->complete(new AIRequest([
+            ['role' => 'user', 'content' => 'Find running shoes'],
+        ]));
+
+        $this->assertTrue($response->hasToolCalls());
+        $this->assertSame('search_products', $response->toolCalls[0]->name);
+        $this->assertSame('sig_from_thought', $response->toolCalls[0]->thoughtSignature);
+    }
+
     public function test_gemini_provider_sends_function_responses_for_tool_results(): void
     {
         Http::preventStrayRequests();
