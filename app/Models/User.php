@@ -6,6 +6,8 @@ use App\Enums\SubscriptionStatus;
 use App\Enums\UserStatus;
 use App\Models\Concerns\HasPublicUuid;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,12 +17,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'status', 'is_admin'])]
+#[Fillable(['name', 'first_name', 'last_name', 'email', 'password', 'status', 'is_admin'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasPublicUuid, Notifiable;
+    use HasFactory, HasPublicUuid, MustVerifyEmailTrait, Notifiable;
 
     /**
      * @return array<string, string>

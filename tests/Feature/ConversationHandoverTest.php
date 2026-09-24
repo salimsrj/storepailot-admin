@@ -97,7 +97,7 @@ class ConversationHandoverTest extends TestCase
 
     public function test_ai_mode_still_answers_normally(): void
     {
-        $site = $this->authenticatedSite();
+        $site = $this->enableAgentMode($this->authenticatedSite());
         $visitor = Visitor::factory()->for($site)->create();
         $conversation = Conversation::factory()->for($site)->for($visitor)->create();
         $this->fakeAI();
@@ -114,7 +114,7 @@ class ConversationHandoverTest extends TestCase
 
     public function test_takeover_and_release_toggle_the_mode(): void
     {
-        $site = $this->authenticatedSite();
+        $site = $this->enableAgentMode($this->authenticatedSite());
         $conversation = Conversation::factory()->for($site)->create();
 
         $takeoverPath = "/api/v1/conversations/{$conversation->uuid}/takeover";

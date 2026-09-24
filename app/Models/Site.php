@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'status',
     'last_seen_at',
 ])]
-#[Hidden(['site_token_hash', 'site_secret_encrypted'])]
+#[Hidden(['site_token_hash', 'site_token_encrypted', 'site_secret_encrypted'])]
 class Site extends Model
 {
     /** @use HasFactory<SiteFactory> */

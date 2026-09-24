@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\AgentModeException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterSiteRequest;
 use App\Http\Requests\RotateSiteTokenRequest;
@@ -52,7 +53,17 @@ class SiteController extends Controller
         $site = $request->attributes->get('site');
         assert($site instanceof Site);
 
-        $settings = $sites->updateSettings($site, $request->validated());
+        $data = $request->validated();
+
+        if (array_key_exists('enable_agent', $data) && $request->boolean('enable_agent')) {
+            $site->loadMissing('user.currentSubscription');
+
+            if ($site->user?->currentSubscription === null) {
+                throw AgentModeException::subscriptionRequired();
+            }
+        }
+
+        $settings = $sites->updateSettings($site, $data);
 
         return response()->json([
             'data' => [
@@ -65,6 +76,7 @@ class SiteController extends Controller
                 'enable_cart' => $settings->enable_cart,
                 'enable_checkout' => $settings->enable_checkout,
                 'enable_order_tracking' => $settings->enable_order_tracking,
+                'enable_agent' => $settings->enable_agent,
             ],
         ]);
     }

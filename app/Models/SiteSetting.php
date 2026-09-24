@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'enable_cart',
     'enable_checkout',
     'enable_order_tracking',
+    'enable_agent',
     'settings',
 ])]
 class SiteSetting extends Model
@@ -38,6 +39,7 @@ class SiteSetting extends Model
             'enable_cart' => 'boolean',
             'enable_checkout' => 'boolean',
             'enable_order_tracking' => 'boolean',
+            'enable_agent' => 'boolean',
             'settings' => 'array',
         ];
     }

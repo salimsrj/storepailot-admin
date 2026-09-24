@@ -74,8 +74,10 @@ class ModelRelationshipsTest extends TestCase
         $site = Site::factory()->create();
 
         $this->assertArrayNotHasKey('site_token_hash', $site->toArray());
+        $this->assertArrayNotHasKey('site_token_encrypted', $site->toArray());
         $this->assertArrayNotHasKey('site_secret_encrypted', $site->toArray());
         $this->assertNotEmpty($site->site_token_hash);
+        $this->assertNotEmpty($site->site_token_encrypted);
         $this->assertNotEmpty($site->site_secret_encrypted);
         $this->assertSame(64, strlen($site->site_token_hash));
     }

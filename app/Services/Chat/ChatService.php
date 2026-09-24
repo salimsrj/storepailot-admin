@@ -39,10 +39,15 @@ class ChatService
         $settings = $this->settingsFor($site);
         $visitor = $this->resolveVisitor($site, $payload['visitor_id']);
         $conversation = $this->resolveConversation($site, $visitor, $payload['conversation_id'] ?? null);
+        $site->loadMissing('user.currentSubscription');
 
-        // A human agent has taken this conversation over: record the visitor's
-        // message and stop. No usage is reserved and no AI provider is called.
-        if ($conversation->mode === ConversationMode::Human) {
+        // Direct messaging only: Agent Mode off, no subscription, or a human
+        // agent has taken this conversation over. No usage / no CommerceAgent.
+        if (
+            ! $settings->enable_agent
+            || $site->user?->currentSubscription === null
+            || $conversation->mode === ConversationMode::Human
+        ) {
             $this->storeVisitorMessage($conversation, $payload['message']);
 
             return [

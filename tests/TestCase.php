@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\AI\Contracts\AIProviderInterface;
 use App\Models\Site;
+use App\Models\Subscription;
 use App\Services\Security\HmacSigner;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Support\FakeAIProvider;
@@ -27,6 +28,22 @@ abstract class TestCase extends BaseTestCase
             ->withToken($this->siteToken())
             ->withSecret($this->siteSecret())
             ->create($attributes);
+    }
+
+    /**
+     * Turn on Agent Mode for chat tests that expect CommerceAgent replies.
+     */
+    protected function enableAgentMode(Site $site): Site
+    {
+        $site->loadMissing('user', 'settings');
+
+        $site->settings()->update(['enable_agent' => true]);
+
+        if ($site->user->currentSubscription === null) {
+            Subscription::factory()->for($site->user)->create();
+        }
+
+        return $site->fresh(['user.currentSubscription', 'settings']);
     }
 
     /**

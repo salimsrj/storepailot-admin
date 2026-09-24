@@ -38,9 +38,11 @@ class SiteFactory extends Factory
     public function configure(): static
     {
         return $this->afterMaking(function (Site $site): void {
-            if (blank($site->site_token_hash)) {
+            if (blank($site->site_token_hash) || blank($site->site_token_encrypted)) {
+                $token = 'cp_live_'.Str::random(40);
                 $site->forceFill([
-                    'site_token_hash' => hash('sha256', 'cp_live_'.Str::random(40)),
+                    'site_token_hash' => hash('sha256', $token),
+                    'site_token_encrypted' => Crypt::encryptString($token),
                 ]);
             }
 
@@ -62,6 +64,7 @@ class SiteFactory extends Factory
         return $this->afterMaking(function (Site $site) use ($token): void {
             $site->forceFill([
                 'site_token_hash' => hash('sha256', $token),
+                'site_token_encrypted' => Crypt::encryptString($token),
             ]);
         });
     }

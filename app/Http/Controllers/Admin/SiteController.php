@@ -83,6 +83,7 @@ class SiteController extends Controller
         $data['enable_cart'] = $request->boolean('enable_cart');
         $data['enable_checkout'] = $request->boolean('enable_checkout');
         $data['enable_order_tracking'] = $request->boolean('enable_order_tracking');
+        $data['enable_agent'] = $request->boolean('enable_agent');
 
         $this->sites->updateSettings($site, $data);
 

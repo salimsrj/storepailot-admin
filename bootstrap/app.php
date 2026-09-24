@@ -3,8 +3,10 @@
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\AuthenticateSite;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsMerchant;
 use App\Http\Middleware\RateLimitSite;
 use App\Http\Middleware\VerifySiteSignature;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,10 +22,25 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->append(AssignRequestId::class);
-        $middleware->redirectGuestsTo(fn () => route('admin.login'));
-        $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('admin') || $request->is('admin/*')) {
+                return route('admin.login');
+            }
+
+            return route('login');
+        });
+        $middleware->redirectUsersTo(function () {
+            $user = auth()->user();
+
+            if ($user instanceof User && $user->isAdmin()) {
+                return route('admin.dashboard');
+            }
+
+            return route('dashboard');
+        });
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            'merchant' => EnsureUserIsMerchant::class,
             'site' => AuthenticateSite::class,
             'site.hmac' => VerifySiteSignature::class,
             'site.rate' => RateLimitSite::class,

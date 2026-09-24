@@ -16,6 +16,12 @@ class SiteResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $this->resource->loadMissing(['settings', 'user.currentSubscription.plan']);
+
+        $settings = $this->settings;
+        $subscription = $this->user?->currentSubscription;
+        $canEnableAgent = $subscription !== null;
+
         return [
             'id' => $this->uuid,
             'name' => $this->name,
@@ -26,6 +32,12 @@ class SiteResource extends JsonResource
             'wordpress_version' => $this->wordpress_version,
             'woocommerce_version' => $this->woocommerce_version,
             'last_seen_at' => $this->last_seen_at,
+            'enable_agent' => (bool) ($settings?->enable_agent ?? false),
+            'can_enable_agent' => $canEnableAgent,
+            'subscription' => $subscription === null ? null : [
+                'status' => $subscription->status->value,
+                'plan' => $subscription->plan?->name,
+            ],
         ];
     }
 }

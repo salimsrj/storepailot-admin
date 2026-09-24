@@ -4,6 +4,7 @@ namespace App\Services\Chat;
 
 use App\Enums\ConversationMode;
 use App\Enums\MessageRole;
+use App\Exceptions\AgentModeException;
 use App\Models\Conversation;
 use App\Models\Message;
 
@@ -25,6 +26,14 @@ class HandoverService
 
     public function release(Conversation $conversation): Conversation
     {
+        $conversation->loadMissing('site.settings', 'site.user.currentSubscription');
+        $settings = $conversation->site?->settings;
+        $hasSubscription = $conversation->site?->user?->currentSubscription !== null;
+
+        if (! $settings?->enable_agent || ! $hasSubscription) {
+            throw AgentModeException::disabled();
+        }
+
         $conversation->forceFill([
             'mode' => ConversationMode::Ai,
             'handover_at' => null,

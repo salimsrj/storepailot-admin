@@ -54,10 +54,10 @@
                     <label>System prompt</label>
                     <textarea name="system_prompt" class="form-control" rows="4">{{ old('system_prompt', $site->settings->system_prompt ?? '') }}</textarea>
                 </div>
-                @foreach (['enable_product_search' => 'Product search', 'enable_recommendations' => 'Recommendations', 'enable_cart' => 'Cart', 'enable_checkout' => 'Checkout', 'enable_order_tracking' => 'Order tracking'] as $field => $label)
+                @foreach (['enable_agent' => 'Agent Mode', 'enable_product_search' => 'Product search', 'enable_recommendations' => 'Recommendations', 'enable_cart' => 'Cart', 'enable_checkout' => 'Checkout', 'enable_order_tracking' => 'Order tracking'] as $field => $label)
                     <div class="form-check">
                         <input type="hidden" name="{{ $field }}" value="0">
-                        <input type="checkbox" name="{{ $field }}" value="1" class="form-check-input" id="{{ $field }}" @checked(old($field, $site->settings?->{$field} ?? true))>
+                        <input type="checkbox" name="{{ $field }}" value="1" class="form-check-input" id="{{ $field }}" @checked(old($field, $site->settings?->{$field} ?? ($field === 'enable_agent' ? false : true)))>
                         <label class="form-check-label" for="{{ $field }}">{{ $label }}</label>
                     </div>
                 @endforeach

@@ -24,6 +24,7 @@ class UpdateSiteSettingsRequest extends FormRequest
             'enable_cart' => ['sometimes', 'boolean'],
             'enable_checkout' => ['sometimes', 'boolean'],
             'enable_order_tracking' => ['sometimes', 'boolean'],
+            'enable_agent' => ['sometimes', 'boolean'],
         ];
     }
 }

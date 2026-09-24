@@ -28,6 +28,7 @@ class SiteSettingFactory extends Factory
             'enable_cart' => true,
             'enable_checkout' => true,
             'enable_order_tracking' => false,
+            'enable_agent' => false,
             'settings' => [
                 'currency' => 'USD',
             ],

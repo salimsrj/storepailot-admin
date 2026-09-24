@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\AI\DTOs\AIResponse;
 use App\Models\Conversation;
-use App\Models\Plan;
-use App\Models\Subscription;
 use App\Models\UsagePeriod;
 use App\Models\Visitor;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -18,7 +16,7 @@ class ChatApiTest extends TestCase
 
     public function test_chat_returns_an_assistant_message_and_usage(): void
     {
-        $this->authenticatedSite();
+        $this->enableAgentMode($this->authenticatedSite());
         $this->fakeAI();
         $visitorId = '11111111-1111-1111-1111-111111111111';
 
@@ -43,7 +41,7 @@ class ChatApiTest extends TestCase
 
     public function test_chat_rejects_a_conversation_from_another_site(): void
     {
-        $this->authenticatedSite();
+        $this->enableAgentMode($this->authenticatedSite());
         $foreign = Conversation::factory()->create();
         $this->fakeAI();
 
@@ -58,7 +56,7 @@ class ChatApiTest extends TestCase
 
     public function test_chat_rejects_a_conversation_owned_by_another_visitor(): void
     {
-        $site = $this->authenticatedSite();
+        $site = $this->enableAgentMode($this->authenticatedSite());
         $visitor = Visitor::factory()->for($site)->create();
         $other = Visitor::factory()->for($site)->create();
         $conversation = Conversation::factory()->for($site)->for($visitor)->create();
@@ -75,9 +73,7 @@ class ChatApiTest extends TestCase
 
     public function test_usage_limit_returns_402_without_calling_the_ai_provider(): void
     {
-        $site = $this->authenticatedSite();
-        $plan = Plan::factory()->free()->create();
-        Subscription::factory()->for($site->user()->first())->for($plan)->create();
+        $site = $this->enableAgentMode($this->authenticatedSite());
         UsagePeriod::factory()->for($site)->exhausted()->create();
         $provider = $this->fakeAI();
         $provider->push(new AIResponse('should not be used', [], 1, 1, 'fake-model'));
@@ -97,7 +93,7 @@ class ChatApiTest extends TestCase
     #[DataProvider('greetingMessages')]
     public function test_greeting_returns_a_ready_reply_without_calling_ai(string $message): void
     {
-        $this->authenticatedSite();
+        $this->enableAgentMode($this->authenticatedSite());
         $provider = $this->fakeAI();
         $provider->push(new AIResponse('should not be used', [], 1, 1, 'fake-model'));
 
@@ -139,7 +135,7 @@ class ChatApiTest extends TestCase
     #[DataProvider('multilingualShoppingMessages')]
     public function test_multilingual_shopping_question_reaches_the_ai_and_stores_the_message(string $message): void
     {
-        $this->authenticatedSite();
+        $this->enableAgentMode($this->authenticatedSite());
         $this->fakeAI();
 
         $response = $this->postJson('/api/v1/chat', [
@@ -173,7 +169,7 @@ class ChatApiTest extends TestCase
 
     public function test_shopping_question_that_starts_with_a_greeting_still_calls_the_ai(): void
     {
-        $this->authenticatedSite();
+        $this->enableAgentMode($this->authenticatedSite());
         $this->fakeAI();
 
         $response = $this->postJson('/api/v1/chat', [

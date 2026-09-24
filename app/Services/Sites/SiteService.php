@@ -45,6 +45,7 @@ class SiteService
 
             $site->forceFill([
                 'site_token_hash' => $this->tokens->hash($token),
+                'site_token_encrypted' => $this->tokens->encrypt($token),
                 'site_secret_encrypted' => $this->secrets->encrypt($secret),
             ])->save();
 
