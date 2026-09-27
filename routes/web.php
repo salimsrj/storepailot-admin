@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\UsageEventController;
 use App\Http\Controllers\Admin\UsagePeriodController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WebhookEventController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Merchant\Auth\LoginController as MerchantLoginController;
 use App\Http\Controllers\Merchant\CredentialsController;
 use App\Http\Controllers\Merchant\DashboardController as MerchantDashboardController;
@@ -20,8 +21,10 @@ use App\Http\Controllers\Signup\EmailVerificationController;
 use App\Http\Controllers\Signup\SignupController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', LandingController::class)->name('home');
+
 Route::middleware('guest')->group(function (): void {
-    Route::get('/', [SignupController::class, 'create'])->name('signup.create');
+    Route::get('/signup', [SignupController::class, 'create'])->name('signup.create');
     Route::post('/signup', [SignupController::class, 'store'])
         ->middleware('throttle:signup')
         ->name('signup.store');

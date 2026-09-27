@@ -114,11 +114,13 @@ class ConversationController extends Controller
     public function reply(AgentReplyRequest $request, string $conversation): JsonResponse
     {
         $model = $this->find($this->site($request), $conversation);
+        $validated = $request->validated();
 
         $message = $this->handover->reply(
             $model,
-            (string) $request->validated('content'),
-            $request->validated('agent'),
+            (string) ($validated['content'] ?? ''),
+            $validated['agent'] ?? null,
+            is_array($validated['products'] ?? null) ? $validated['products'] : [],
         );
 
         return response()->json([

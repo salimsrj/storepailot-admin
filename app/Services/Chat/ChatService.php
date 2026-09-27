@@ -163,26 +163,26 @@ class ChatService
 
     private function resolveConversation(Site $site, Visitor $visitor, ?string $conversationUuid): Conversation
     {
-        if ($conversationUuid === null) {
-            return Conversation::query()->create([
-                'site_id' => $site->id,
-                'visitor_id' => $visitor->id,
-            ]);
+        if ($conversationUuid !== null) {
+            $conversation = Conversation::query()
+                ->forSite($site)
+                ->where('uuid', $conversationUuid)
+                ->first();
+
+            if ($conversation !== null) {
+                if ($conversation->visitor_id !== $visitor->id) {
+                    throw ConversationException::forbidden();
+                }
+
+                return $conversation;
+            }
+
+            // Stale browser storage (e.g. after site reconnect) — start a fresh thread.
         }
 
-        $conversation = Conversation::query()
-            ->forSite($site)
-            ->where('uuid', $conversationUuid)
-            ->first();
-
-        if ($conversation === null) {
-            throw ConversationException::notFound();
-        }
-
-        if ($conversation->visitor_id !== $visitor->id) {
-            throw ConversationException::forbidden();
-        }
-
-        return $conversation;
+        return Conversation::query()->create([
+            'site_id' => $site->id,
+            'visitor_id' => $visitor->id,
+        ]);
     }
 }

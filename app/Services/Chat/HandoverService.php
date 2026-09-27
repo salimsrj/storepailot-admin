@@ -7,6 +7,7 @@ use App\Enums\MessageRole;
 use App\Exceptions\AgentModeException;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Services\WooCommerce\DTOs\ProductData;
 
 /**
  * Moves a conversation between AI and human control, and records agent replies.
@@ -46,16 +47,32 @@ class HandoverService
     /**
      * Stored as an assistant turn so the AI keeps the thread coherent if it
      * later resumes; the metadata marks it as written by a person.
+     *
+     * @param  list<array<string, mixed>>  $products
      */
-    public function reply(Conversation $conversation, string $content, ?string $agent = null): Message
+    public function reply(Conversation $conversation, string $content, ?string $agent = null, array $products = []): Message
     {
+        $normalized = $this->normalizeProducts($products);
+        $content = trim($content);
+
+        // Keep a readable transcript when the agent shares cards without typing.
+        if ($content === '' && $normalized !== []) {
+            $content = implode(', ', array_map(
+                static fn (array $product): string => (string) ($product['name'] ?? 'Product'),
+                $normalized,
+            ));
+        }
+
+        $metadata = array_filter([
+            'author' => 'human',
+            'author_name' => $agent,
+            'products' => $normalized !== [] ? $normalized : null,
+        ], static fn ($value) => $value !== null && $value !== '');
+
         $message = $conversation->messages()->create([
             'role' => MessageRole::Assistant,
             'content' => $content,
-            'metadata' => array_filter([
-                'author' => 'human',
-                'author_name' => $agent,
-            ]),
+            'metadata' => $metadata,
         ]);
 
         $conversation->forceFill([
@@ -64,5 +81,29 @@ class HandoverService
         ])->save();
 
         return $message;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $products
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeProducts(array $products): array
+    {
+        $out = [];
+
+        foreach (array_slice($products, 0, 5) as $product) {
+            if (! is_array($product)) {
+                continue;
+            }
+
+            $normalized = ProductData::fromArray($product)->toArray();
+            if ($normalized['id'] < 1) {
+                continue;
+            }
+
+            $out[] = $normalized;
+        }
+
+        return $out;
     }
 }

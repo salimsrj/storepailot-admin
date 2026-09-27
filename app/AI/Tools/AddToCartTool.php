@@ -20,7 +20,7 @@ class AddToCartTool implements Tool
 
     public function description(): string
     {
-        return 'Add a verified product to the WooCommerce cart.';
+        return 'Add a verified product to the WooCommerce cart. For variable products, call get_product_variations first and pass the chosen variation_id. Never add a variable product without variation_id.';
     }
 
     public function schema(): array

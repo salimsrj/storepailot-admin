@@ -39,19 +39,26 @@ class ChatApiTest extends TestCase
         ]);
     }
 
-    public function test_chat_rejects_a_conversation_from_another_site(): void
+    public function test_chat_starts_a_new_thread_for_an_unknown_conversation(): void
     {
         $this->enableAgentMode($this->authenticatedSite());
         $foreign = Conversation::factory()->create();
         $this->fakeAI();
 
-        $this->postJson('/api/v1/chat', [
+        $response = $this->postJson('/api/v1/chat', [
             'conversation_id' => $foreign->uuid,
             'visitor_id' => '11111111-1111-1111-1111-111111111111',
             'message' => 'Hello',
         ], $this->siteHeaders())
-            ->assertNotFound()
-            ->assertJsonPath('error.code', 'conversation_not_found');
+            ->assertOk();
+
+        $newId = $response->json('data.conversation_id');
+        $this->assertNotEmpty($newId);
+        $this->assertNotSame($foreign->uuid, $newId);
+        $this->assertDatabaseHas('messages', [
+            'role' => 'user',
+            'content' => 'Hello',
+        ]);
     }
 
     public function test_chat_rejects_a_conversation_owned_by_another_visitor(): void

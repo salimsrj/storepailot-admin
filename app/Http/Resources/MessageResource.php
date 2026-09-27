@@ -25,7 +25,22 @@ class MessageResource extends JsonResource
             'content' => $this->content,
             'author' => $author,
             'author_name' => isset($metadata['author_name']) ? (string) $metadata['author_name'] : null,
+            'products' => $this->productsFromMetadata($metadata),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $metadata
+     * @return list<array<string, mixed>>
+     */
+    private function productsFromMetadata(array $metadata): array
+    {
+        $products = $metadata['products'] ?? [];
+        if (! is_array($products) || $products === []) {
+            return [];
+        }
+
+        return ProductResource::collection($products)->resolve();
     }
 }

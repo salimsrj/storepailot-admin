@@ -1,0 +1,77 @@
+{
+  "_fonts-BdnsLSaM.css": {
+    "file": "assets/fonts-BdnsLSaM.css",
+    "src": "_fonts-BdnsLSaM.css"
+  },
+  "_instrument-sans-400-normal-D1W7dsQl.woff": {
+    "file": "assets/instrument-sans-400-normal-D1W7dsQl.woff",
+    "src": "_instrument-sans-400-normal-D1W7dsQl.woff"
+  },
+  "_instrument-sans-400-normal-DRC__1Mx.woff2": {
+    "file": "assets/instrument-sans-400-normal-DRC__1Mx.woff2",
+    "src": "_instrument-sans-400-normal-DRC__1Mx.woff2"
+  },
+  "_instrument-sans-500-normal-Dk9ku72i.woff2": {
+    "file": "assets/instrument-sans-500-normal-Dk9ku72i.woff2",
+    "src": "_instrument-sans-500-normal-Dk9ku72i.woff2"
+  },
+  "_instrument-sans-500-normal-Z6ESRlEs.woff": {
+    "file": "assets/instrument-sans-500-normal-Z6ESRlEs.woff",
+    "src": "_instrument-sans-500-normal-Z6ESRlEs.woff"
+  },
+  "_instrument-sans-600-normal-B7fBEWYG.woff2": {
+    "file": "assets/instrument-sans-600-normal-B7fBEWYG.woff2",
+    "src": "_instrument-sans-600-normal-B7fBEWYG.woff2"
+  },
+  "_instrument-sans-600-normal-B9e8oLYv.woff": {
+    "file": "assets/instrument-sans-600-normal-B9e8oLYv.woff",
+    "src": "_instrument-sans-600-normal-B9e8oLYv.woff"
+  },
+  "_instrument-sans-700-normal-CYfAanHo.woff2": {
+    "file": "assets/instrument-sans-700-normal-CYfAanHo.woff2",
+    "src": "_instrument-sans-700-normal-CYfAanHo.woff2"
+  },
+  "_instrument-sans-700-normal-DfAjL1vF.woff": {
+    "file": "assets/instrument-sans-700-normal-DfAjL1vF.woff",
+    "src": "_instrument-sans-700-normal-DfAjL1vF.woff"
+  },
+  "_syne-600-normal-BiwQbQXw.woff2": {
+    "file": "assets/syne-600-normal-BiwQbQXw.woff2",
+    "src": "_syne-600-normal-BiwQbQXw.woff2"
+  },
+  "_syne-600-normal-dRu9QuIh.woff": {
+    "file": "assets/syne-600-normal-dRu9QuIh.woff",
+    "src": "_syne-600-normal-dRu9QuIh.woff"
+  },
+  "_syne-700-normal-AF3Rs61n.woff2": {
+    "file": "assets/syne-700-normal-AF3Rs61n.woff2",
+    "src": "_syne-700-normal-AF3Rs61n.woff2"
+  },
+  "_syne-700-normal-Cd-_iCn5.woff": {
+    "file": "assets/syne-700-normal-Cd-_iCn5.woff",
+    "src": "_syne-700-normal-Cd-_iCn5.woff"
+  },
+  "_syne-800-normal-BuJcbPcX.woff": {
+    "file": "assets/syne-800-normal-BuJcbPcX.woff",
+    "src": "_syne-800-normal-BuJcbPcX.woff"
+  },
+  "_syne-800-normal-EehdNYzx.woff2": {
+    "file": "assets/syne-800-normal-EehdNYzx.woff2",
+    "src": "_syne-800-normal-EehdNYzx.woff2"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-BlrfDOO8.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DIZEten-.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}

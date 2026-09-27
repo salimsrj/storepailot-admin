@@ -13,9 +13,9 @@ class SignupTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    public function test_signup_page_is_available_at_root(): void
+    public function test_signup_page_is_available(): void
     {
-        $this->get('/')
+        $this->get(route('signup.create'))
             ->assertOk()
             ->assertSee('Create your CommercePilot account');
     }

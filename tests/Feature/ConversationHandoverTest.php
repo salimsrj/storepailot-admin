@@ -154,6 +154,63 @@ class ConversationHandoverTest extends TestCase
         $this->assertSame('human', $message->metadata['author']);
     }
 
+    public function test_agent_reply_can_include_shared_product_cards(): void
+    {
+        $site = $this->authenticatedSite();
+        $conversation = Conversation::factory()->for($site)->create([
+            'mode' => ConversationMode::Human,
+        ]);
+
+        $path = "/api/v1/conversations/{$conversation->uuid}/messages";
+        $payload = [
+            'content' => '',
+            'agent' => 'Store Owner',
+            'products' => [
+                [
+                    'id' => 78,
+                    'name' => 'Premium Leather Wallet',
+                    'price' => '750.00',
+                    'currency' => 'BDT',
+                    'stock_status' => 'instock',
+                    'image' => 'https://example.test/wallet.jpg',
+                    'url' => 'https://shop.test/product/wallet',
+                    'short_description' => 'Handcrafted',
+                    'categories' => ['Leather'],
+                    'has_variations' => true,
+                ],
+            ],
+        ];
+
+        $this->postJson($path, $payload, $this->signedFor('POST', $path, $payload))
+            ->assertCreated()
+            ->assertJsonPath('data.author', 'human')
+            ->assertJsonPath('data.content', 'Premium Leather Wallet')
+            ->assertJsonPath('data.products.0.id', 78)
+            ->assertJsonPath('data.products.0.name', 'Premium Leather Wallet');
+
+        $message = Message::query()->where('conversation_id', $conversation->id)->sole();
+        $this->assertSame(78, $message->metadata['products'][0]['id']);
+
+        $poll = "/api/v1/conversations/{$conversation->uuid}/messages";
+        $this->getSigned($poll)
+            ->assertOk()
+            ->assertJsonPath('data.messages.0.products.0.id', 78);
+    }
+
+    public function test_agent_reply_requires_content_or_products(): void
+    {
+        $site = $this->authenticatedSite();
+        $conversation = Conversation::factory()->for($site)->create([
+            'mode' => ConversationMode::Human,
+        ]);
+
+        $path = "/api/v1/conversations/{$conversation->uuid}/messages";
+        $payload = ['content' => '', 'agent' => 'Store Owner'];
+
+        $this->postJson($path, $payload, $this->signedFor('POST', $path, $payload))
+            ->assertStatus(422);
+    }
+
     public function test_waiting_count_returns_open_conversations_where_visitor_spoke_last(): void
     {
         $site = $this->authenticatedSite();
